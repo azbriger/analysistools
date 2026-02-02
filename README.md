@@ -15,5 +15,4 @@ The code is a direct refactor of analysis scripts developed for an astronomy/SDR
 
 From the project directory:
 ```bash
-pip install git+https://github.com/astronomeh/wesleyanalysis.git
-
+pip install git+https://github.com/analysistools/wesleyanalysis.git
