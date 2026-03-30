@@ -1,34 +1,124 @@
-#AI was used to help write comments, making it easier to understand the function of each variable.
+# AI was used to help write comments, making it easier to understand the function of each variable.
 
 import numpy as np
-import ugradio
+# import ugradio
 
 
-def capture_data(sample_rate, nsamples, nblocks, direct=True):
+# ============================================================
+# SIMPLE ARRAY HELPERS (NEW)
+# ============================================================
+
+def drop_first_block(data):
     """
-    Create an SDR object and capture data.
+    Drop the first block along axis 0.
 
-    Parameters
-    ----------
-    sample_rate : float
-        Sampling rate in Hz
-    nsamples : int
-        Number of samples per block
-    nblocks : int
-        Number of blocks
-    direct : bool
-        Use direct sampling mode
+    Required structure
+    ------------------
+    data must be a numpy array with shape:
+        (nblocks, ...)
+
+    Meaning: axis 0 indexes blocks. All remaining dimensions can be anything.
+    Example: (nblocks, N) or (nblocks, N, 2)
 
     Returns
     -------
-    data : np.ndarray
-        Captured data array of shape (nblocks, nsamples)
+    np.ndarray
+        data with block 0 removed: data[1:]
     """
-    # Create SDR Object.
-    sdr = ugradio.sdr.SDR(direct=direct, sample_rate=sample_rate)
-    data = sdr.capture_data(nsamples=nsamples, nblocks=nblocks)
-    sdr.close()
-    return data
+    if not isinstance(data, np.ndarray):
+        raise TypeError("drop_first_block: data must be a numpy array")
+    if data.ndim < 1:
+        raise ValueError("drop_first_block: data must have at least 1 dimension")
+    if data.shape[0] < 2:
+        raise ValueError("drop_first_block: need at least 2 blocks to drop the first one")
+    return data[1:]
+
+
+def block_mean(arr):
+    """
+    Mean over blocks (axis 0).
+
+    Required structure
+    ------------------
+    arr must be a numpy array with shape:
+        (nblocks, ...)
+
+    Meaning: axis 0 indexes blocks. This returns the mean "spectrum" / "vector" / "image"
+    across blocks.
+
+    Example:
+        power_blocks shape = (nblocks, N)
+        block_mean(power_blocks) -> shape (N,)
+
+    Returns
+    -------
+    np.ndarray
+        np.mean(arr, axis=0)
+    """
+    if not isinstance(arr, np.ndarray):
+        raise TypeError("block_mean: arr must be a numpy array")
+    if arr.ndim < 1:
+        raise ValueError("block_mean: arr must have at least 1 dimension")
+    return np.mean(arr, axis=0)
+
+
+def block_median(arr):
+    """
+    Median over blocks (axis 0).
+
+    Required structure
+    ------------------
+    arr must be a numpy array with shape:
+        (nblocks, ...)
+
+    Meaning: axis 0 indexes blocks. This returns the median "spectrum" / "vector" / "image"
+    across blocks.
+
+    Example:
+        power_blocks shape = (nblocks, N)
+        block_median(power_blocks) -> shape (N,)
+
+    Returns
+    -------
+    np.ndarray
+        np.median(arr, axis=0)
+    """
+    if not isinstance(arr, np.ndarray):
+        raise TypeError("block_median: arr must be a numpy array")
+    if arr.ndim < 1:
+        raise ValueError("block_median: arr must have at least 1 dimension")
+    return np.median(arr, axis=0)
+
+
+# ============================================================
+# YOUR ORIGINAL FUNCTIONS
+# ============================================================
+
+# def capture_data(sample_rate, nsamples, nblocks, direct=True):
+#     """
+#     Create an SDR object and capture data.
+#
+#     Parameters
+#     ----------
+#     sample_rate : float
+#         Sampling rate in Hz
+#     nsamples : int
+#         Number of samples per block
+#     nblocks : int
+#         Number of blocks
+#     direct : bool
+#         Use direct sampling mode
+#
+#     Returns
+#     -------
+#     data : np.ndarray
+#         Captured data array of shape (nblocks, nsamples)
+#     """
+#     # Create SDR Object.
+#     sdr = ugradio.sdr.SDR(direct=direct, sample_rate=sample_rate)
+#     data = sdr.capture_data(nsamples=nsamples, nblocks=nblocks)
+#     sdr.close()
+#     return data
 
 
 def voltage_spectrum(data):
@@ -63,8 +153,6 @@ def power_spectrum(data):
 
 
 ###### This is the start of the theory plot of f_obs vs f_samp plot ######
-
-import numpy as np
 
 def alias_peak(f0, fs):
     """
@@ -105,4 +193,4 @@ def logspace_fs(fs_max, fs_min, npts=400):
     """
     return np.logspace(np.log10(fs_max), np.log10(fs_min), int(npts))
 
-    ###### This is the end of the theory plot of f_obs vs f_samp plot ######
+###### This is the end of the theory plot of f_obs vs f_samp plot ######
